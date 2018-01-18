@@ -1,5 +1,5 @@
 import { createStore, combineReducers } from 'redux';
-import uuid from 'uuid'; // used for generating random id
+import uuid from 'uuid';
 
 // ADD_EXPENSE
 const addExpense = (
@@ -27,7 +27,18 @@ const removeExpense = ({ id } = {}) => ({
 });
 
 // EDIT_EXPENSE
+const editExpense = (id, updates) => ({
+  type: 'EDIT_EXPENSE',
+  id,
+  updates
+});
+
 // SET_TEXT_FILTER
+const setTextFilter = (text = '') => ({
+  type: 'SET_TEXT_FILTER',
+  text
+});
+
 // SORT_BY_DATE
 // SORT_BY_AMOUNT
 // SET_START_DATE
@@ -45,9 +56,20 @@ const expensesReducer = (state = expensesReducerDefaultState, action) => {
         action.expense
       ];
     case 'REMOVE_EXPENSE':
-      // if this func returns true (i.e. if the id of the expense is not the one
-      // mentioned in the removeExpense func), the item will be kept in the array
       return state.filter(({ id }) => id !== action.id);
+    case 'EDIT_EXPENSE':
+      return state.map((expense) => {
+        if (expense.id === action.id) {
+          return {
+            // grab the expense object &
+            // override it with the updates (see store.dispatch(editExpense()):
+            ...expense,
+            ...action.updates
+          };
+        } else {
+          return expense;
+        };
+      });
     default:
       return state;
   }
@@ -64,6 +86,13 @@ const filtersReducerDefaultState = {
 
 const filtersReducer = (state = filtersReducerDefaultState, action) => {
   switch (action.type) {
+    case 'SET_TEXT_FILTER':
+      return {
+        // grab the expense object &
+        // override its text property with the text set in store.dispatch(setTextFilter():
+        ...state,
+        text: action.text
+      };
     default:
       return state;
   }
@@ -85,7 +114,11 @@ store.subscribe(() => {
 const expenseOne = store.dispatch(addExpense({ description: 'Rent', amount: 100 }));
 const expenseTwo = store.dispatch(addExpense({ description: 'Coffee', amount: 300 }));
 
-store.dispatch(removeExpense({ id: expenseTwo.expense.id }));
+store.dispatch(removeExpense({ id: expenseOne.expense.id }));
+store.dispatch(editExpense(expenseTwo.expense.id, { description: 'Tea', amount: 500 }));
+
+store.dispatch(setTextFilter('renting'));
+store.dispatch(setTextFilter());
 
 const demoState = {
   expenses: [{
@@ -102,4 +135,3 @@ const demoState = {
     endDate: undefined
   }
 };
-
