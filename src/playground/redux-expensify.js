@@ -45,6 +45,8 @@ const expensesReducer = (state = expensesReducerDefaultState, action) => {
         action.expense
       ];
     case 'REMOVE_EXPENSE':
+      // if this func returns true (i.e. if the id of the expense is not the one
+      // mentioned in the removeExpense func), the item will be kept in the array
       return state.filter(({ id }) => id !== action.id);
     default:
       return state;
